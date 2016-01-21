@@ -1,0 +1,240 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+public class PanelPracowniczy {
+	private Scanner sc;
+	private Connection conn = null;
+	private ResultSet rs;
+	private Statement stmt;
+	private int temp;
+	private boolean f = true;
+
+	public PanelPracowniczy() throws SQLException {
+		while (f == true) {
+			System.out.println("Jaki panel wlaczyc?");
+			System.out.println("1.Zarządzanie zwierzetami");
+			System.out.println("2.Zarządzanie magazynem i klatkami");
+			sc = new Scanner(System.in);
+			int contr = sc.nextInt();
+			if (contr == 1) {
+				boolean ff = true;
+				while (ff == true) {
+					System.out.println("Co chcesz zrobic?");
+					System.out.println("1.Przejrzyj zwierzaki");
+					System.out.println("2.Dodaj zwierzaka");
+					System.out.println("3.Usuń zwierzaka");
+					System.out.println("4.Modyfikuj dane zwierzaka");
+					System.out.println("5.Wyszukaj zwierzaka");
+					System.out.println("6.Wyjdz");
+					sc = new Scanner(System.in);
+					temp = sc.nextInt();
+					switch (temp) {
+					case 1:
+						przegladaj();
+						break;
+					case 2:
+						dodaj();
+						break;
+
+					case 3:
+						usun();
+						break;
+					case 4:
+						modyfikuj();
+						break;
+
+					case 5:
+						wyszukaj();
+						break;
+					case 6:
+						ff = false;
+					}
+				}
+			} else {
+				zarzadzajmagazynem();
+			}
+		}
+	}
+
+	private void dodaj() {
+
+		System.out.println("Podaj gatunek");
+		sc = new Scanner(System.in);
+		String gatunek = sc.next();
+		System.out.println("Podaj rase");
+		sc = new Scanner(System.in);
+		String rasa = sc.nextLine();
+		System.out.println("podaj uwagi");
+		sc = new Scanner(System.in);
+		String uwagi = sc.nextLine();
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("INSERT INTO zwierzeta " + "(gatunek, rasa, uwagi) VALUES ('" + gatunek + "', '" + rasa
+					+ "', '" + uwagi + "')");
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private void przegladaj() {
+
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT id, gatunek, rasa, uwagi FROM zwierzeta");
+			while (rs.next()) {
+
+				System.out.println(rs.getInt("id") + " " + rs.getString("gatunek") + " " + rs.getString("rasa") + " "
+						+ rs.getString("uwagi"));
+			}
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void usun() {
+		try {
+			System.out.println("podaj ID zwierzaka ktorego chcesz usunac");
+			sc = new Scanner(System.in);
+			int id = sc.nextInt();
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("DELETE FROM zwierzeta where id='" + id + "'");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private void wyszukaj() {
+		try {
+			String temp2, temp3;
+			System.out.println("Wyszukać wg");
+			System.out.println("1.gatunek");
+			System.out.println("2.Rasa");
+			sc = new Scanner(System.in);
+			int id = sc.nextInt();
+			if (id == 1) {
+				temp2 = "gatunek";
+				System.out.println("Podaj gatunek");
+				sc = new Scanner(System.in);
+				temp3 = sc.next();
+			} else {
+				System.out.println("Podaj rase");
+				sc = new Scanner(System.in);
+				temp3 = sc.nextLine();
+				temp2 = "rasa";
+			}
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			rs = stmt
+					.executeQuery("SELECT id, gatunek, rasa, uwagi FROM zwierzeta WHERE " + temp2 + "='" + temp3 + "'");
+			conn.close();
+			System.out.println(rs.getInt(id) + " " + rs.getString("gatunek") + " " + rs.getString("rasa") + " "
+					+ rs.getString("uwagi"));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private void modyfikuj() {
+		try {
+			System.out.println("podaj ID zwierzaka ktorego chcesz modyfikować");
+			sc = new Scanner(System.in);
+			int id = sc.nextInt();
+			System.out.println("Podaj jaką uwagę chcesz ustawić");
+			sc = new Scanner(System.in);
+			String temp2 = sc.nextLine();
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("UPDATE zwierzeta SET uwagi='" + temp2 + "' WHERE id=" + id);
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void zarzadzajmagazynem() throws SQLException{
+
+		boolean contrl=true;
+		while (contrl) {
+			System.out.println("Co chcesz zrobic?");
+			System.out.println("1. Sprawdz karme");
+			System.out.println("2. Sprawdz stan klatek");
+			System.out.println("3. Dodaj karme do klatki");
+			System.out.println("4. Posprzataj klatke");
+			System.out.println("5. Kup karme");
+			System.out.println("6. Sprawdz stan konta");
+			System.out.println("7. Wyjdź");
+			sc = new Scanner(System.in);
+			int test = sc.nextInt();
+			switch (test) {
+			case 1:
+				System.out.println(Magazyn.sprawdzKarme() + " kg");
+				break;
+			case 2:
+				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery("SELECT id, statusczystosci, statuskarmy FROM klatka");
+				while (rs.next()) {
+					System.out.println(
+							rs.getInt("id") + " " + rs.getString("statusczystosci") + " " + rs.getInt("statuskarmy"));
+				}
+				conn.close();
+				break;
+			case 3:
+				int id;
+				float karm;
+				System.out.println("Do której klatki chcesz dodać karme");
+				sc = new Scanner(System.in);
+				id = sc.nextInt();
+				System.out.println("Ile karmy chcesz dodać?");
+				sc = new Scanner(System.in);
+				karm = sc.nextFloat();
+				if (karm <= Magazyn.sprawdzKarme()) {
+					conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+					stmt = conn.createStatement();
+					rs=stmt.executeQuery("SELECT statuskarmy FROM klatka WHERE id='" + id + "'");
+					karm=karm+rs.getFloat("statuskarmy");
+					stmt.executeUpdate("UPDATE klatka SET statuskarmy='"+karm+"' WHERE id='"+id+"'");
+					conn.close();
+				}else{
+					System.out.println("masz za malo karmy");
+				}
+				break;
+			case 4:
+				System.out.println("Którą klatke posprzatales?");
+				sc = new Scanner(System.in);
+				id = sc.nextInt();
+				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+				stmt = conn.createStatement();
+				stmt.executeUpdate("UPDATE klatka SET statusczystosci='posprzatana' WHERE id='"+id+"'");
+			case 5:
+				System.out.println("ile karmy chcesz kupic?");
+				sc=new Scanner(System.in);
+				Magazyn.kupkarme(sc.nextFloat());
+				break;
+			case 6:
+				System.out.println(Magazyn.sprawdzKonto());
+				break;
+			case 7:
+				contrl=false;
+				break;
+			}
+		}
+	
+	}
+}
