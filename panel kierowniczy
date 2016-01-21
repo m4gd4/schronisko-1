@@ -1,0 +1,363 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+public class PanelKierowniczy {
+	private int sem;
+	private Scanner sc;
+	private Connection conn = null;
+	private Statement stmt;
+	private ResultSet rs;
+	private boolean seem = true;
+
+	public PanelKierowniczy() throws SQLException {
+		zarzadzajPanelem();
+	}
+	private void zarzadzajPanelem() throws SQLException{
+		while (seem) {
+			System.out.println("Jakie menu zarządzania mam włączyć?");
+			System.out.println("1.Pracownicy");
+			System.out.println("2.Zwierzeta");
+			System.out.println("3.Magazyn");
+			System.out.println("4.Wyjdz");
+			sc = new Scanner(System.in);
+			sem = sc.nextInt();
+			if (sem == 1) {
+				boolean tes = true;
+				while (tes) {
+					System.out.println("Co chcesz zrobic?");
+					System.out.println("1.Przejrzyj pracowników");
+					System.out.println("2.Dodaj pracownika");
+					System.out.println("3.Usuń pracownika");
+					System.out.println("4.Modyfikuj pensje pracownika");
+					System.out.println("5.Wyszukaj pracownika");
+					System.out.println("6.Wyjdz");
+					sc = new Scanner(System.in);
+					int temp = sc.nextInt();
+					switch (temp) {
+					case 1:
+						przegladaj();
+						break;
+					case 2:
+						dodaj();
+						break;
+
+					case 3:
+						usun();
+						break;
+					case 4:
+						modyfikuj();
+						break;
+
+					case 5:
+						wyszukaj();
+						break;
+					case 6:
+						tes = false;
+					}
+				}
+			} else if (sem == 2) {
+				boolean ff = true;
+				while (ff == true) {
+					System.out.println("Co chcesz zrobic?");
+					System.out.println("1.Przejrzyj zwierzaki");
+					System.out.println("2.Dodaj zwierzaka");
+					System.out.println("3.Usuń zwierzaka");
+					System.out.println("4.Modyfikuj dane zwierzaka");
+					System.out.println("5.Wyszukaj zwierzaka");
+					System.out.println("6.Wyjdz");
+					sc = new Scanner(System.in);
+					int temp = sc.nextInt();
+					switch (temp) {
+					case 1:
+						przejrzyjzwierzeta();
+
+						break;
+					case 2:
+						dodajzwierzaka();
+						break;
+
+					case 3:
+						usunzwierzaka();
+						break;
+					case 4:
+						modyfikujzwierzaka();
+						break;
+
+					case 5:
+						wyszukajzwierzaka();
+						break;
+					case 6:
+						ff = false;
+					}
+				}
+			} else if (sem == 3) {
+				zarzadzajmagazynem();
+			} else if (sem == 4) {
+				seem = false;
+			}
+		}
+	}
+	private void dodaj() {
+
+		System.out.println("Podaj imię");
+		sc = new Scanner(System.in);
+		String gatunek = sc.next();
+		System.out.println("Podaj Nazwisko");
+		sc = new Scanner(System.in);
+		String rasa = sc.nextLine();
+		System.out.println("podaj pensję");
+		sc = new Scanner(System.in);
+		double salary = sc.nextDouble();
+		System.out.println("login");
+		sc = new Scanner(System.in);
+		String login = sc.nextLine();
+		System.out.println("Podaj haslo");
+		sc = new Scanner(System.in);
+		String haslo = sc.nextLine();
+		System.out.println("Ustal poziom dostepu (od 1 do 3)");
+		sc = new Scanner(System.in);
+		int poziomdostepu = sc.nextInt();
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("INSERT INTO pracownicy "
+					+ "(imie, nazwisko, pensja, login, haslo, poziomdostepu) VALUES ('" + gatunek + "', '" + rasa
+					+ "', '" + salary + "', '" + login + "', '" + haslo + "', '" + poziomdostepu + "')");
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	private void usun() {
+
+		try {
+			System.out.println("podaj ID pracownika ktorego chcesz usunac");
+			sc = new Scanner(System.in);
+			int id = sc.nextInt();
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("DELETE FROM pracownicy where id='" + id + "'");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	private void wyszukaj() {
+		try {
+
+			System.out.println("Podaj id pracownika, którego chcesz wyszukac");
+			sc = new Scanner(System.in);
+			int id = sc.nextInt();
+
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT id, imie, nazwisko, pensja FROM pracownicy WHERE " + "id" + "='" + id + "'");
+			System.out.println(rs.getInt(id) + " " + rs.getString("imie") + " " + rs.getString("nazwisko") + " "
+					+ rs.getDouble("pensja"));
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void przegladaj() {
+
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT id, imie, nazwisko, pensja FROM pracownicy");
+			while (rs.next()) {
+
+				System.out.println(rs.getInt("id") + " " + rs.getString("imie") + " " + rs.getString("nazwisko") + " "
+						+ rs.getDouble("pensja"));
+			}
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void modyfikuj() {
+		try {
+			System.out.println("podaj ID pracownika ktorego chcesz modyfikować");
+			sc = new Scanner(System.in);
+			int id = sc.nextInt();
+			System.out.println("Podaj jaką pensje chcesz ustawić");
+			sc = new Scanner(System.in);
+			double temp2 = sc.nextDouble();
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("UPDATE pracownicy SET pensja='" + temp2 + "' WHERE id=" + id);
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void przejrzyjzwierzeta() throws SQLException {
+
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT id, gatunek, rasa, uwagi FROM zwierzeta");
+		while (rs.next()) {
+
+			System.out.println(rs.getInt("id") + " " + rs.getString("gatunek") + " " + rs.getString("rasa") + " "
+					+ rs.getString("uwagi"));
+		}
+	}
+	private void dodajzwierzaka() {
+
+		System.out.println("Podaj gatunek");
+		sc = new Scanner(System.in);
+		String gatunek = sc.next();
+		System.out.println("Podaj rase");
+		sc = new Scanner(System.in);
+		String rasa = sc.nextLine();
+		System.out.println("podaj uwagi");
+		sc = new Scanner(System.in);
+		String uwagi = sc.nextLine();
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("INSERT INTO zwierzeta " + "(gatunek, rasa, uwagi) VALUES ('" + gatunek + "', '" + rasa
+					+ "', '" + uwagi + "')");
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void usunzwierzaka() {
+
+		System.out.println("Podaj gatunek");
+		sc = new Scanner(System.in);
+		String gatunek = sc.next();
+		System.out.println("Podaj rase");
+		sc = new Scanner(System.in);
+		String rasa = sc.nextLine();
+		System.out.println("podaj uwagi");
+		sc = new Scanner(System.in);
+		String uwagi = sc.nextLine();
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			stmt.executeUpdate("INSERT INTO zwierzeta " + "(gatunek, rasa, uwagi) VALUES ('" + gatunek + "', '" + rasa
+					+ "', '" + uwagi + "')");
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void modyfikujzwierzaka() throws SQLException {
+
+		System.out.println("podaj ID zwierzaka ktorego chcesz modyfikować");
+		sc = new Scanner(System.in);
+		int id = sc.nextInt();
+		System.out.println("Podaj jaką uwagę chcesz ustawić");
+		sc = new Scanner(System.in);
+		String temp2 = sc.nextLine();
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+		stmt = conn.createStatement();
+		stmt.executeUpdate("UPDATE zwierzeta SET uwagi='" + temp2 + "' WHERE id=" + id);
+		conn.close();
+	}
+	private void wyszukajzwierzaka() {
+
+		try {
+			String temp3, temp2;
+			int id;
+			System.out.println("Wyszukać wg");
+			System.out.println("1.gatunek");
+			System.out.println("2.Rasa");
+			sc = new Scanner(System.in);
+			id = sc.nextInt();
+			if (id == 1) {
+				temp2 = "gatunek";
+				System.out.println("Podaj gatunek");
+				sc = new Scanner(System.in);
+				temp3 = sc.next();
+			} else {
+				System.out.println("Podaj rase");
+				sc = new Scanner(System.in);
+				temp3 = sc.nextLine();
+				temp2 = "rasa";
+			}
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root", "dexter16");
+			stmt = conn.createStatement();
+			rs = stmt
+					.executeQuery("SELECT id, gatunek, rasa, uwagi FROM zwierzeta WHERE " + temp2 + "='" + temp3 + "'");
+			conn.close();
+			System.out.println(rs.getInt(id) + " " + rs.getString("gatunek") + " " + rs.getString("rasa") + " "
+					+ rs.getString("uwagi"));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void zarzadzajmagazynem() throws SQLException{
+		boolean che = true;
+		while (che) {
+			System.out.println("co chcesz zrobic?");
+			System.out.println("1.Sprawdz stan konta");
+			System.out.println("2.Sprawdz stan karmy");
+			System.out.println("3.Kup karme");
+			System.out.println("4.Zasil konto");
+			System.out.println("5.Sprawdz stan klatek");
+			System.out.println("6 Kup klatke");
+			System.out.println("7.wyjdz");
+			sc = new Scanner(System.in);
+			int pom = sc.nextInt();
+			switch (pom) {
+			case 1:
+				System.out.println(Magazyn.sprawdzKonto() + " zł");
+				break;
+			case 2:
+				System.out.println(Magazyn.sprawdzKarme() + " kg");
+				break;
+			case 3:
+				System.out.println("Ile kg karmy chcesz kupic?");
+				sc = new Scanner(System.in);
+				Magazyn.kupkarme(sc.nextFloat());
+				break;
+			case 4:
+				System.out.println("ile pieniedzy chcesz wplacic?");
+				sc = new Scanner(System.in);
+				Magazyn.wplacnaKonto(sc.nextFloat());
+				break;
+			case 5:
+				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root",
+						"dexter16");
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery("SELECT id, statusczystosci, statuskarmy FROM klatka");
+				while (rs.next()) {
+					System.out.println(rs.getInt("id") + " " + rs.getString("statusczystosci") + " "
+							+ rs.getInt("statuskarmy"));
+				}
+				conn.close();
+				break;
+			case 6:
+				if (Magazyn.sprawdzKonto() > 100) {
+					conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/schornisko", "root",
+							"dexter16");
+					stmt = conn.createStatement();
+					stmt.executeUpdate(
+							"INSERT INTO klatka " + "(statuskarmy, statusczystosci) VALUES ('0' ,'czysta')");
+				} else {
+					System.out.println("nie masz funduszy, potrzebujesz minimum 100 zlotych");
+				}
+				break;
+			case 7:
+				che = false;
+				break;
+			}
+		}
+	}
+}
